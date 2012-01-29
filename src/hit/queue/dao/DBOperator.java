@@ -54,9 +54,4 @@ public class DBOperator {
 		}
 		return flag;
 	}
-
-	public static void main() {
-		DBOperator dbo = new DBOperator();
-		dbo.query("select * from queue");
-	}
 }

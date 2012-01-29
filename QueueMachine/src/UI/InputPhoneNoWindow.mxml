@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="634" height="292" close="titlewindow1_closeHandler(event)" fontFamily="中易黑体"
+			   fontSize="15" fontWeight="bold" title="请输入手机号">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				close();
+				
+			}
+			
+			protected function titlewindow1_closeHandler(event:CloseEvent):void
+			{
+				close();
+			}
+			
+			private function close():void{
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:VGroup width="80%" height="85%" horizontalAlign="center" horizontalCenter="0"
+			  verticalCenter="0">
+		<s:HGroup width="100%" height="40%" textAlign="center" verticalAlign="middle">
+			<s:Label width="30%" height="100%" fontFamily="中易黑体" fontSize="25" text="请输入手机号"
+					 textAlign="center" verticalAlign="middle"/>
+			<s:TextInput width="65%" height="60%" fontSize="25" prompt="点此输入" text="**********9"/>
+		</s:HGroup>
+		<s:HGroup width="100%" height="40%" textAlign="center" verticalAlign="middle">
+			<s:Label width="30%" height="100%" fontSize="25" text="请确认手机号" textAlign="center"
+					 verticalAlign="middle"/>
+			<s:TextInput width="65%" height="60%" fontSize="25" text="**********9"/>
+		</s:HGroup>
+		<s:Button width="25%" height="13%" label="确认" click="button1_clickHandler(event)"
+				  cornerRadius="7"/>
+	</s:VGroup>
+</s:TitleWindow>
