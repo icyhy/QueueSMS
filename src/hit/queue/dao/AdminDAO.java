@@ -7,8 +7,8 @@ import java.sql.*;
 
 /**
  * @author ÂíÌìÒí
- *
+ * 
  */
 public interface AdminDAO {
-	
+
 }

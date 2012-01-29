@@ -5,7 +5,7 @@ package hit.queue.exception;
 
 /**
  * @author ÂíÌìÒí
- *
+ * 
  */
 public class WindowNotFoundException extends Exception {
 

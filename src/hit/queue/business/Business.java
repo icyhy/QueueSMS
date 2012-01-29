@@ -28,8 +28,8 @@ public class Business {
 		windows = new ArrayList<Window>();
 		windows.add(new Window(no));
 	}
-	
-	public Business(){
+
+	public Business() {
 		this.name = "";
 	}
 
@@ -64,7 +64,7 @@ public class Business {
 	}
 
 	public void addWindow(Window window) {
-		ArrayList<Window> windows =  this.getWindows();
+		ArrayList<Window> windows = this.getWindows();
 		windows.add(window);
 	}
 }
