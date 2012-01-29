@@ -8,6 +8,7 @@
 	<fx:Script>
 		<![CDATA[
 			import UI.InputPhoneNoWindow;
+			
 			import mx.managers.PopUpManager;
 			protected function button1_clickHandler(event:MouseEvent):void
 			{
@@ -16,6 +17,20 @@
 				PopUpManager.centerPopUp(inputPhoneNo);
 				
 			}
+			
+			private function loadBusiness():void{
+				var newButton:Button = new Button();
+				newButton.percentWidth = 80;
+				newButton.percentHeight = 20;
+				this.businessContainer.addElement(newButton);
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				loadBusiness();
+				
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -23,12 +38,12 @@
 		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
 	</fx:Declarations>
 	<s:Image width="1024" height="768" horizontalCenter="0" source="image/1.jpg" verticalCenter="0"/>
-	<s:VGroup width="60%" height="60%" gap="20" horizontalAlign="center" horizontalCenter="0"
-			  textAlign="center" verticalAlign="middle" verticalCenter="0">
+	<s:VGroup id="businessContainer" width="60%" height="60%" gap="20" horizontalAlign="center"
+			  horizontalCenter="0" textAlign="center" verticalAlign="middle" verticalCenter="0">
 		<s:Button width="60%" height="20%" label="个人业务" click="button1_clickHandler(event)"
 				  fontFamily="细明体" fontSize="36" fontStyle="normal" fontWeight="bold"/>
-		<s:Button width="60%" height="20%" label="现金业务" fontFamily="细明体" fontSize="36"
-				  fontStyle="normal" fontWeight="bold"/>
+		<s:Button width="60%" height="20%" label="现金业务" click="button2_clickHandler(event)"
+				  fontFamily="细明体" fontSize="36" fontStyle="normal" fontWeight="bold"/>
 		<s:Button width="60%" height="20%" label="对公业务" fontFamily="细明体" fontSize="36"
 				  fontStyle="normal" fontWeight="bold"/>
 		<s:Button width="60%" height="20%" label="VIP业务" fontFamily="细明体" fontSize="36"

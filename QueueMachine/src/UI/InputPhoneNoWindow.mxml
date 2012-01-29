@@ -24,6 +24,7 @@
 				PopUpManager.removePopUp(this);
 			}
 			
+			
 		]]>
 	</fx:Script>
 	
