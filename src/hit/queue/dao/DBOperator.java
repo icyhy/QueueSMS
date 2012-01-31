@@ -10,6 +10,10 @@ import java.sql.*;
  * 
  */
 public class DBOperator {
+	Connection con;
+	Statement st;
+	ResultSet rs;
+
 	/**
 	 * 从数据库中查询数据
 	 * 
@@ -17,17 +21,12 @@ public class DBOperator {
 	 * @return
 	 */
 	public ResultSet query(String sql) {
-		Connection con = null;
-		Statement st = null;
-		ResultSet rs = null;
 		try {
 			con = ConnectionManager.getConnection();
 			st = con.createStatement();
 			rs = st.executeQuery(sql);
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			ConnectionManager.closeResource(con, st, rs);
 		}
 		return rs;
 	}
@@ -41,7 +40,6 @@ public class DBOperator {
 	public boolean update(String sql) {// 修改数据库中数据
 		Connection con = null;
 		Statement st = null;
-		ResultSet rs = null;
 		boolean flag = false;
 		try {
 			con = ConnectionManager.getConnection();
@@ -49,9 +47,11 @@ public class DBOperator {
 			flag = st.execute(sql);
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			ConnectionManager.closeResource(con, st, rs);
 		}
 		return flag;
+	}
+
+	public void close() {
+		ConnectionManager.closeResource(con, st, rs);
 	}
 }
