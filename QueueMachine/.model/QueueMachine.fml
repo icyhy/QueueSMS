@@ -1,0 +1,38 @@
+
+<model xmlns="http://ns.adobe.com/Fiber/1.0">
+  <annotation name="ActionScriptGeneration">
+    <item name="FullyQualifyReferences">true</item>
+  </annotation>
+  <service name="QueueMachine">
+    <annotation name="ActionScriptGeneration">
+      <item name="WSDL-service">QueueMachine</item>
+      <item name="ServiceType">WebService</item>
+      <item name="WSDL">http://localhost:8080/QueueSMS/services/QueueMachine?wsdl</item>
+      <item name="Package">services.queuemachine</item>
+      <item name="WSDL-port">QueueMachineHttpPort</item>
+    </annotation>
+    <annotation name="ServiceTypeGroup">
+      <item name="ServiceBackendType">WebService</item>
+    </annotation>
+    <annotation name="WSDLCollectionElementTypes">
+      <item name="http://service.queue.hit,ArrayOfString">string::http://www.w3.org/2001/XMLSchema,string</item>
+    </annotation>
+    <annotation name="ServiceConfig">
+      <item name="DEFAULT_ENTITY_PACKAGE">valueObjects</item>
+      <item name="WSDL-endpoint">http://localhost:8080/QueueSMS/services/QueueMachine</item>
+      <item name="LINKED_FILE"></item>
+    </annotation>
+    <function name="getBusinessList" return-type="string[]">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="WSDLName">
+        <item name="getBusinessList">http://service.queue.hit,getBusinessList</item>
+        <item name="SOAPAction"></item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="returnType">string</item>
+      </annotation>
+    </function>
+  </service>
+</model>

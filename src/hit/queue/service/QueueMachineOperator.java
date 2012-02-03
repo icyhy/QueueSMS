@@ -18,6 +18,7 @@ public class QueueMachineOperator implements QueueMachineServcies {
 	/* (non-Javadoc)
 	 * @see hit.queue.service.QueueMachineServcies#getBusinessList()
 	 */
+	
 	public ArrayList<String> getBusinessList() {
 		QueueMachineDAO qmd = new QueueMachineDAOImp();
 		ArrayList<String> list = new ArrayList<String>();

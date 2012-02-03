@@ -21,6 +21,7 @@ public class QueueMachineDAOImp implements QueueMachineDAO {
 		while (result.next()) {
 			list.add(result.getString("name"));
 		}
+		System.out.println(list.toString());
 		dbo.close();
 		return list;
 	}

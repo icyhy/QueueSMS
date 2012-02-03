@@ -2,14 +2,26 @@
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
 					   xmlns:s="library://ns.adobe.com/flex/spark"
 					   xmlns:mx="library://ns.adobe.com/flex/mx"
-					   width="1024" height="768">
+					   xmlns:queuemachine="services.queuemachine.*"
+					   width="1024" height="768" creationComplete="init()">
 	<fx:Style source="QueueMachine.css"/>
 	
 	<fx:Script>
 		<![CDATA[
+			import UI.BusinessButton;
 			import UI.InputPhoneNoWindow;
 			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.controls.Alert;
 			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			private function init():void{
+				getBusinessList();
+			}
+			
 			protected function button1_clickHandler(event:MouseEvent):void
 			{
 				var inputPhoneNo:InputPhoneNoWindow = new InputPhoneNoWindow();
@@ -18,36 +30,60 @@
 				
 			}
 			
-			private function loadBusiness():void{
-				var newButton:Button = new Button();
-				newButton.percentWidth = 80;
-				newButton.percentHeight = 20;
-				this.businessContainer.addElement(newButton);
-			}
 			
 			protected function button2_clickHandler(event:MouseEvent):void
 			{
-				loadBusiness();
+				getBusinessList();
 				
+			}
+			
+			protected function onLoad(event:ResultEvent):void{
+				Alert.show(event.result.toString());
+			}
+			
+			protected function faultHandler(event:FaultEvent):void{
+				Alert.show(event.toString());
+			}
+			
+			protected function getBusinessList():void
+			{
+				getBusinessListResult.token = queueMachine.getBusinessList();
+				getBusinessListResult.addEventListener(ResultEvent.RESULT,getBusinessListResultHandler);
+			}
+			
+			private function getBusinessListResultHandler(event:ResultEvent):void{
+				var result:ArrayCollection = new ArrayCollection();
+				result = event.result as ArrayCollection;
+				generateMenu(result);
+			}
+			
+			private function generateMenu(list:ArrayCollection):void{
+				var length:int = list.length;
+				if(length>0){//业务数大于0
+					for(var i:int=0;i<length;i++){
+						var name:String = list.getItemAt(i) as String;
+						businessContainer.addElement(new BusinessButton(name));
+					}
+				}
+				else{//业务数小于或等于0，即无业务
+					Alert.show("当前系统未指定业务！");
+				}
 			}
 			
 		]]>
 	</fx:Script>
-	
 	<fx:Declarations>
-		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+		<s:CallResponder id="getBusinessListResult"/>
+		<queuemachine:QueueMachine id="queueMachine"
+								   fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
+								   showBusyCursor="true"/>
+		
+		
 	</fx:Declarations>
+	
 	<s:Image width="1024" height="768" horizontalCenter="0" source="image/1.jpg" verticalCenter="0"/>
 	<s:VGroup id="businessContainer" width="60%" height="60%" gap="20" horizontalAlign="center"
 			  horizontalCenter="0" textAlign="center" verticalAlign="middle" verticalCenter="0">
-		<s:Button width="60%" height="20%" label="个人业务" click="button1_clickHandler(event)"
-				  fontFamily="细明体" fontSize="36" fontStyle="normal" fontWeight="bold"/>
-		<s:Button width="60%" height="20%" label="现金业务" click="button2_clickHandler(event)"
-				  fontFamily="细明体" fontSize="36" fontStyle="normal" fontWeight="bold"/>
-		<s:Button width="60%" height="20%" label="对公业务" fontFamily="细明体" fontSize="36"
-				  fontStyle="normal" fontWeight="bold"/>
-		<s:Button width="60%" height="20%" label="VIP业务" fontFamily="细明体" fontSize="36"
-				  fontStyle="normal" fontWeight="bold"/>
 	</s:VGroup>
 	
 </s:WindowedApplication>
