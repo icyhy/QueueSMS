@@ -3,60 +3,71 @@
 					   xmlns:s="library://ns.adobe.com/flex/spark"
 					   xmlns:mx="library://ns.adobe.com/flex/mx"
 					   xmlns:queuemachine="services.queuemachine.*"
-					   width="1024" height="768" creationComplete="init()">
-	<fx:Style source="QueueMachine.css"/>
-	
+					   xmlns:UI="UI.*"
+					   width="1024" height="768" creationComplete="complete()" currentState="start"
+					   initialize="init()">
 	<fx:Script>
 		<![CDATA[
 			import UI.BusinessButton;
-			import UI.InputPhoneNoWindow;
+			import UI.LoadingProgressBar;
 			
 			import mx.collections.ArrayCollection;
 			import mx.collections.ArrayList;
 			import mx.controls.Alert;
+			import mx.events.*;
 			import mx.managers.PopUpManager;
 			import mx.rpc.events.FaultEvent;
 			import mx.rpc.events.ResultEvent;
 			
+			
+			private var progressBar:LoadingProgressBar;//读取进度条
+			private var alert:Alert;//错误提示
+			
+			//初始化排队机第一步，最大化窗口
 			private function init():void{
-				getBusinessList();
+				this.maximize();
 			}
 			
-			protected function button1_clickHandler(event:MouseEvent):void
-			{
-				var inputPhoneNo:InputPhoneNoWindow = new InputPhoneNoWindow();
-				PopUpManager.addPopUp(inputPhoneNo, this, true );
-				PopUpManager.centerPopUp(inputPhoneNo);
-				
+			//初始化排队机第二步，排队机
+			private function complete():void{
+				checkTime();
 			}
 			
-			
-			protected function button2_clickHandler(event:MouseEvent):void
-			{
-				getBusinessList();
-				
+			//检查当前时间
+			private function checkTime():void{
+				if(isClosingTime())
+					closing();
+				else
+					getBusinessList();
 			}
 			
-			protected function onLoad(event:ResultEvent):void{
-				Alert.show(event.result.toString());
+			//判断是否为停业时间
+			private function isClosingTime():Boolean{
+				//TODO
+				return false;
 			}
 			
-			protected function faultHandler(event:FaultEvent):void{
-				Alert.show(event.toString());
+			//停业
+			private function closing():void{
+				this.currentState = "closing";
 			}
 			
+			//调用Webservice获取业务列表
 			protected function getBusinessList():void
 			{
+				this.currentState = "loadingBusiness";
 				getBusinessListResult.token = queueMachine.getBusinessList();
 				getBusinessListResult.addEventListener(ResultEvent.RESULT,getBusinessListResultHandler);
 			}
 			
+			//处理获取业务列表的结果事件，提取列表，生成菜单
 			private function getBusinessListResultHandler(event:ResultEvent):void{
 				var result:ArrayCollection = new ArrayCollection();
 				result = event.result as ArrayCollection;
 				generateMenu(result);
 			}
 			
+			//生成业务菜单
 			private function generateMenu(list:ArrayCollection):void{
 				var length:int = list.length;
 				if(length>0){//业务数大于0
@@ -64,26 +75,51 @@
 						var name:String = list.getItemAt(i) as String;
 						businessContainer.addElement(new BusinessButton(name));
 					}
+					this.currentState = "working";
 				}
 				else{//业务数小于或等于0，即无业务
-					Alert.show("当前系统未指定业务！");
+					popAlert("当前未分配业务！");
 				}
 			}
 			
+			//弹出错误提示
+			private function popAlert(message:String):void{
+				this.currentState = "start";
+				alert = Alert.show(message,"错误",4,this,this.nativeApplication.exit);
+			}
+			
+			//读取业务失败处理
+			private function loadBusinessFaultHander(event:FaultEvent):void{
+				popAlert("网络错误！请联系管理员！");
+			}
 		]]>
 	</fx:Script>
+	<s:states>
+		<s:State name="start"/>
+		<s:State name="loadingBusiness"/>
+		<s:State name="working"/>
+		<s:State name="closing"/>
+	</s:states>
 	<fx:Declarations>
 		<s:CallResponder id="getBusinessListResult"/>
-		<queuemachine:QueueMachine id="queueMachine"
-								   fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
+		<queuemachine:QueueMachine id="queueMachine" fault="loadBusinessFaultHander(event)"
 								   showBusyCursor="true"/>
-		
-		
 	</fx:Declarations>
 	
 	<s:Image width="1024" height="768" horizontalCenter="0" source="image/1.jpg" verticalCenter="0"/>
-	<s:VGroup id="businessContainer" width="60%" height="60%" gap="20" horizontalAlign="center"
-			  horizontalCenter="0" textAlign="center" verticalAlign="middle" verticalCenter="0">
+	<s:VGroup id="businessContainer" includeIn="start,working" width="60%" height="60%" gap="20"
+			  horizontalAlign="center" horizontalCenter="0" textAlign="center"
+			  verticalAlign="middle" verticalCenter="0">
+		
 	</s:VGroup>
+	<UI:LoadingProgressBar includeIn="loadingBusiness" width="50%" height="15%" horizontalCenter="0"
+						   verticalCenter="0">
+	</UI:LoadingProgressBar>
+	<s:Panel includeIn="closing" width="50%" height="200" horizontalCenter="0" title="停业时间"
+			 verticalCenter="0">
+		<s:Label width="80%" height="30%" fontSize="20" horizontalCenter="0"
+				 text="当前为停业时间，请在营业时间前来办理业务" textAlign="center" verticalAlign="middle"
+				 verticalCenter="0"/>
+	</s:Panel>
 	
 </s:WindowedApplication>

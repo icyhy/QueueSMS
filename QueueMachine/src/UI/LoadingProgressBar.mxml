@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="400" height="90" close="titlewindow1_closeHandler(event)" title="读取业务">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			protected function titlewindow1_closeHandler(event:CloseEvent):void
+			{
+				close();
+			}
+			
+			private function close():void{
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<mx:ProgressBar width="90%" height="60%" label="正在读取业务菜单" fontFamily="中易宋体" fontSize="15"
+					horizontalCenter="0" indeterminate="true" labelPlacement="center"
+					verticalCenter="0"/>
+</s:TitleWindow>
