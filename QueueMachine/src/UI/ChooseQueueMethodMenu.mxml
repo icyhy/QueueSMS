@@ -2,58 +2,88 @@
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
 			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   xmlns:mx="library://ns.adobe.com/flex/mx"
-			   close="titlewindow1_closeHandler(event)" currentState="start" title="选择排队方式"
+			   xmlns:validator="util.*"
+			   xmlns:UI="UI.*"
+			   close="titlewindow1_closeHandler(event)"
+			   creationComplete="titlewindow1_creationCompleteHandler(event)" currentState="start"
+			   title="选择排队方式"
 			   width.inputPhone="600" height.inputPhone="300" title.inputPhone="输入手机号"
 			   width.showQueueInfo="600" height.showQueueInfo="300" title.showQueueInfo="打印排队信息"
 			   width.start="600" height.start="300">
+	<fx:Style>
+		.errorTip
+		{
+			fontSize: 12;
+		}
+	</fx:Style>
 	<fx:Script>
+		
 		<![CDATA[
+			import mx.controls.Alert;
+			import mx.controls.ToolTip;
 			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ValidationResultEvent;
 			import mx.managers.PopUpManager;
+			import mx.managers.ToolTipManager;
 			
+			import spark.events.TextOperationEvent;
+			
+			private var tip:ToolTip; 
+			
+			//TitleWindow创建完成事件处理
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				firstPhoneValidator.addEventListener(ValidationResultEvent.INVALID,firstPhoneInvalidEventHandler);
+				firstPhoneValidator.addEventListener(ValidationResultEvent.VALID,firstPhoneValidEventHandler);
+				secondPhoneValidator.addEventListener(ValidationResultEvent.INVALID,secondPhoneInvalidEventHandler);
+				secondPhoneValidator.addEventListener(ValidationResultEvent.VALID,secondPhoneValidEventHandler);
+			}
+			
+			//关闭TitleWindow事件处理
 			protected function titlewindow1_closeHandler(event:CloseEvent):void
 			{
 				close();
 			}
 			
-			
+			//关闭组件
 			private function close():void{
 				PopUpManager.removePopUp(this);
+				destoryTip();
 			}
 			
+			//普通排队，不接收手机短信通知
 			protected function queueWithNoNotification_clickHandler(event:MouseEvent):void
 			{	
-				popUpPrintQueueInfo();
+				switchState("showQueueInfo");
+			}
+			
+			//切换状态
+			private function switchState(state:String):void{
+				this.currentState = state;
 			}
 			
 			//接受手机短信通知
 			protected function queueWithNotification_clickHandler(event:MouseEvent):void
 			{
-				/*
-				var inputPhone:InputPhoneNoWindow = new InputPhoneNoWindow();
-				PopUpManager.addPopUp(inputPhone,this.parent,true);
-				PopUpManager.centerPopUp(inputPhone);
-				PopUpManager.removePopUp(this);
-				*/
-				this.currentState = "inputPhone";
+				switchState("inputPhone");
+				softKeyboard.addEventListener(FlexEvent.CREATION_COMPLETE,addSoftKeyListener);
 			}
 			
-			//打印队列信息
-			private function popUpPrintQueueInfo():void
+			//给软键盘的按钮添加事件处理
+			private function addSoftKeyListener(event:FlexEvent):void
 			{
-				/*
-				PopUpManager.removePopUp(this);
-				var printQueueInfo:PrintQueueInfo = new PrintQueueInfo();
-				PopUpManager.addPopUp(printQueueInfo,this,true);
-				PopUpManager.centerPopUp(printQueueInfo);
-				*/
-				this.currentState = "showQueueInfo";
+				softKeyboard.transferTextInput(firstPhoneNo);
+				softKeyboard.submit.addEventListener(MouseEvent.CLICK,submit_clickHandler);
+				softKeyboard.cancel.addEventListener(MouseEvent.CLICK,cancel_clickHandler);
+				firstPhoneNo.setFocus();
 			}
+			
 			
 			//确定按钮事件处理
 			protected function submit_clickHandler(event:MouseEvent):void
 			{
-				this.currentState = "showQueueInfo";
+				switchState("showQueueInfo");
 			}
 			
 			//取消按钮事件处理
@@ -62,7 +92,122 @@
 				close();
 			}
 			
+			//第一个手机输入框更改事件处理
+			protected function firstPhoneNo_changeHandler(event:TextOperationEvent):void
+			{
+				trace("haha");
+				
+				if(firstPhoneNo.text.length == 11)
+				{
+					firstPhoneValidator.validate(firstPhoneNo.text);
+				}
+				else
+				{
+					softKeyboard.submit.enabled = false;
+					secondPhoneNo.enabled = false;
+					secondPhoneNo.text = "";
+				}
+			}
 			
+			//第一个手机号格式验证非法事件处理
+			private function firstPhoneInvalidEventHandler(event:ValidationResultEvent):void
+			{
+				if(firstPhoneNo.text.length==11)
+				{
+					showTip("手机号格式不正确",firstPhoneNo);
+					softKeyboard.submit.enabled = false;
+					secondPhoneNo.enabled = false;
+					secondPhoneNo.text = "";
+				}
+				else
+					destoryTip();
+			}
+			
+			//第一个手机号格式验证合法事件处理
+			private function firstPhoneValidEventHandler(event:ValidationResultEvent):void
+			{
+				softKeyboard.transferTextInput(secondPhoneNo);
+				secondPhoneNo.enabled = true;
+				secondPhoneNo.setFocus();
+			}
+			
+			//第二个手机输入框更改事件处理
+			protected function secondPhoneNo_changeHandler(event:TextOperationEvent):void
+			{
+				destoryTip();
+				if(secondPhoneNo.text.length == 11)
+				{
+					secondPhoneValidator.validate(secondPhoneNo.text);
+				}
+				else
+				{
+					softKeyboard.submit.enabled = false;
+				}
+			}
+			
+			//第二个手机号格式验证非法事件处理
+			private function secondPhoneInvalidEventHandler(event:ValidationResultEvent):void
+			{
+				if(secondPhoneNo.text.length == 11)
+				{
+					showTip("手机号格式不正确",secondPhoneNo);
+				}
+				else
+					destoryTip();
+			}
+			
+			//第二个手机号格式验证合法事件处理
+			private function secondPhoneValidEventHandler(event:ValidationResultEvent):void
+			{
+				if(firstPhoneNo.text==secondPhoneNo.text)//两个手机号相同
+				{
+					softKeyboard.submit.enabled = true;
+					softKeyboard.submit.setFocus();
+				}
+				else//不同
+				{
+					trace("secondPhoneValidEventHandler");
+					softKeyboard.submit.enabled = false;
+					showTip("两次手机号不相同！",secondPhoneNo);
+				}
+			}
+			
+			//弹出TOOLTIP
+			private function showTip(txt:String,textComponent:TextInput):void
+			{
+				if(tip == null)
+				{
+					var point:Point = new Point(textComponent.x, textComponent.y);
+					point = textComponent.localToGlobal(point);
+					tip = ToolTipManager.createToolTip(txt,
+						point.x - textComponent.x,
+						point.y - 40 ,
+						'errorTipAbove') as ToolTip;
+					textComponent.setStyle("borderColor","#F60505");//文本框设置为红色
+				}
+			} 
+			
+			//关闭TOOLTIP
+			private function destoryTip():void
+			{
+				if(tip)
+				{
+					ToolTipManager.destroyToolTip(tip);
+					firstPhoneNo.setStyle("borderColor","#696969");//设置为原来的颜色
+					secondPhoneNo.setStyle("borderColor","#696969");
+				}
+				tip = null;
+			} 
+			
+			protected function firstPhoneNo_focusInHandler(event:FocusEvent):void
+			{
+				this.softKeyboard.transferTextInput(firstPhoneNo);
+			}
+			
+			protected function secondPhoneNo_focusInHandler(event:FocusEvent):void
+			{
+				this.softKeyboard.transferTextInput(secondPhoneNo);
+			}
 			
 		]]>
 	</fx:Script>
@@ -72,7 +217,10 @@
 		<s:State name="showQueueInfo"/>
 	</s:states>
 	<fx:Declarations>
-		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+		<validator:PhoneValidator id="firstPhoneValidator" source.inputPhone="{firstPhoneNo}" property.inputPhone="text" invalidFormat="" requiredFieldError="">
+		</validator:PhoneValidator>
+		<validator:PhoneValidator id="secondPhoneValidator" source.inputPhone="{secondPhoneNo}" property.inputPhone="text" invalidFormat="" requiredFieldError="">
+		</validator:PhoneValidator>
 	</fx:Declarations>
 	
 	<s:VGroup includeIn="start" width="90%" height="90%" horizontalAlign="center"
@@ -93,12 +241,12 @@
 			  horizontalCenter="0" verticalAlign="middle" verticalCenter="0">
 		<s:HGroup width="90%" height="20%" gap="0" horizontalAlign="center" verticalAlign="middle">
 			<s:Label fontSize="20" fontWeight="bold" text="排队号：" verticalAlign="middle"/>
-			<s:Label fontSize="20" text="号码"/>
+			<s:Label id="QueueNo" fontSize="20" text="号码"/>
 		</s:HGroup>
 		<s:HGroup width="90%" height="10%" fontSize="15" gap="0" horizontalAlign="center"
 				  verticalAlign="middle">
-			<s:Label fontSize="18" fontWeight="bold" text="您的手机号码：13945622065" textAlign="center"
-					 verticalAlign="middle"/>
+			<s:Label id="PhoneNo" fontSize="18" fontWeight="bold" text="您的手机号码：13945622065"
+					 textAlign="center" verticalAlign="middle"/>
 		</s:HGroup>
 		<s:HGroup width="90%" height="10%" fontSize="15" gap="0" horizontalAlign="center"
 				  verticalAlign="middle">
@@ -113,27 +261,36 @@
 		<s:Button id="closeInfo" y="185" width="20%" height="10%" label="关闭"
 				  click="cancel_clickHandler(event)" fontSize="16" fontWeight="bold"/>
 	</s:VGroup>
-	<s:VGroup includeIn="inputPhone" width="90%" height="85%" horizontalAlign="center"
-			  horizontalCenter="0" verticalCenter="0">
-		<s:HGroup width="100%" height="40%" textAlign="center" verticalAlign="middle">
+	<s:VGroup includeIn="inputPhone" width="90%" height="70%" focusColor="#EEEEEE"
+			  horizontalAlign="center" horizontalCenter="0" verticalAlign="middle"
+			  verticalCenter="0">
+		<s:HGroup width="100%" height="45%" textAlign="center" verticalAlign="middle">
 			<s:Label width="30%" height="100%" fontFamily="中易黑体" fontSize="25" text="请输入手机号"
 					 textAlign="center" verticalAlign="middle"/>
-			<s:TextInput width="65%" height="60%" displayAsPassword="true" fontSize="25"
-						 maxChars="11" prompt="输入手机号码" restrict="0-9"/>
+			<s:TextInput id="firstPhoneNo" width="65%" height="60%" enabled="true"
+						 focusOut="destoryTip()" fontSize="25" maxChars="11" prompt="输入手机号码"
+						 restrict="0-9" focusIn.inputPhone="firstPhoneNo_focusInHandler(event)"/>
 		</s:HGroup>
-		<s:HGroup width="100%" height="40%" textAlign="center" verticalAlign="middle">
+		<s:HGroup width="100%" height="45%" textAlign="center" verticalAlign="middle">
 			<s:Label width="30%" height="100%" fontSize="25" text="请确认手机号" textAlign="center"
 					 verticalAlign="middle"/>
-			<s:TextInput width="65%" height="60%" displayAsPassword="true" enabled="false"
-						 fontSize="25" maxChars="11" prompt="确认手机号码" restrict="0-9"/>
+			<s:TextInput id="secondPhoneNo" width="65%" height="60%" enabled="true"
+						 focusOut="destoryTip()" fontSize="25" maxChars="11" prompt="确认手机号码"
+						 restrict="0-9" focusIn.inputPhone="secondPhoneNo_focusInHandler(event)"/>
 		</s:HGroup>
+		<!--
 		<s:HGroup width="100%" height="14%" horizontalAlign="center" verticalAlign="middle">
 			<s:Button id="submit" width="25%" height="95%" label="确认"
-					  click="submit_clickHandler(event)" cornerRadius="7" fontFamily="中易宋体"
-					  fontSize="16" fontWeight="bold"/>
+					  click="submit_clickHandler(event)" cornerRadius="7" enabled="false"
+					  fontFamily="中易宋体" fontSize="16" fontWeight="bold"/>
 			<s:Button id="cancel" width="25%" height="95%" label="取消"
 					  click="cancel_clickHandler(event)" cornerRadius="7" fontFamily="中易宋体"
 					  fontSize="16" fontWeight="bold"/>
 		</s:HGroup>
+		-->
 	</s:VGroup>
+	<UI:SoftNumberKeyboard id="softKeyboard" includeIn="inputPhone" horizontalCenter="0"
+						   verticalCenter="227">
+	</UI:SoftNumberKeyboard>
+	
 </s:TitleWindow>

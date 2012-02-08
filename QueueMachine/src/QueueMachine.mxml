@@ -6,6 +6,7 @@
 					   xmlns:UI="UI.*"
 					   width="1024" height="768" creationComplete="complete()" currentState="start"
 					   initialize="init()">
+	
 	<fx:Script>
 		<![CDATA[
 			import UI.BusinessButton;
@@ -92,6 +93,45 @@
 			private function loadBusinessFaultHander(event:FaultEvent):void{
 				popAlert("网络错误！请联系管理员！");
 			}
+			
+			//查询排队号按钮事件处理
+			protected function queryQueueNo_clickHandler(event:MouseEvent):void
+			{
+				this.currentState = "queryQueueNoByPhone";
+				queryPanel.addEventListener(FlexEvent.CREATION_COMPLETE,queryQueueNoCreateComplete);
+			}
+			
+			//查询排队号创建完毕事件处理
+			private function queryQueueNoCreateComplete(event:FlexEvent):void{
+				queryPanel.phone.setFocus();
+				queryPanel.cancel.addEventListener(MouseEvent.CLICK,cancel_clickHandler);
+			}
+			
+			//取消按钮事件处理
+			private function cancel_clickHandler(event:MouseEvent):void{
+				this.currentState = "working";
+			}
+			
+			//查询排队时间事件处理
+			protected function queryWaitTime_clickHandler(event:MouseEvent):void
+			{
+				this.currentState = "queryWaitTimeByQueueNo";
+				queryPanel.addEventListener(FlexEvent.CREATION_COMPLETE,queryWaitTimeCreateComplete);
+			}
+			
+			//查询排队时间创建完毕事件处理
+			private function queryWaitTimeCreateComplete(event:FlexEvent):void{
+				queryPanel.cancel2.addEventListener(MouseEvent.CLICK,cancel_clickHandler);
+			}
+			
+			//查询面板关闭事件处理
+			protected function queryPanel_closeHandler(event:CloseEvent):void
+			{
+				this.currentState = "working";
+			}
+			
+			
+			
 		]]>
 	</fx:Script>
 	<s:states>
@@ -99,6 +139,8 @@
 		<s:State name="loadingBusiness"/>
 		<s:State name="working"/>
 		<s:State name="closing"/>
+		<s:State name="queryQueueNoByPhone"/>
+		<s:State name="queryWaitTimeByQueueNo"/>
 	</s:states>
 	<fx:Declarations>
 		<s:CallResponder id="getBusinessListResult"/>
@@ -121,5 +163,18 @@
 				 text="当前为停业时间，请在营业时间前来办理业务" textAlign="center" verticalAlign="middle"
 				 verticalCenter="0"/>
 	</s:Panel>
+	<s:VGroup includeIn="working" right="10" bottom="10" width="20%" height="20%" gap="20"
+			  horizontalAlign="center" verticalAlign="middle">
+		<s:Button id="queryQueueNo" width="80%" height="40%" label="查询排队号"
+				  click="queryQueueNo_clickHandler(event)" fontSize="20" fontWeight="bold"/>
+		<s:Button id="queryWaitTime" width="80%" height="40%" label="查询排队时间"
+				  click="queryWaitTime_clickHandler(event)" fontSize="20" fontWeight="bold"/>
+	</s:VGroup>
+	<UI:QueryPanel id="queryPanel" includeIn="queryQueueNoByPhone,queryWaitTimeByQueueNo" width="60%"
+				   height="40%" horizontalCenter="0" verticalCenter="0"
+				   width.queryQueueNoByPhone="50%"
+				   close.queryQueueNoByPhone="queryPanel_closeHandler(event)"
+				   currentState.queryWaitTimeByQueueNo="queryWaitTime">
+	</UI:QueryPanel>
 	
 </s:WindowedApplication>
